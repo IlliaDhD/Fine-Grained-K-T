@@ -1,8 +1,6 @@
-import os
+import os, requests, logging
 
-import requests
 from flask import Flask, request
-import logging
 
 # Creates Flask application
 app = Flask(__name__)
@@ -82,7 +80,7 @@ def read_data():
     if not token:
         return {"error": "Missing token"}, 401
 
-    allowed = check_permission(token, resource="editor_resource", scope="view")
+    allowed = check_permission(token, resource="viewer_resource", scope="view")
 
     if not allowed:
         return {"error": "The user must be a viewer"}, 403
