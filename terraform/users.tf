@@ -66,6 +66,6 @@ resource "keycloak_user_roles" "admin_roles" {
 
 resource "keycloak_user_roles" "viewer_roles" {
   realm_id = keycloak_realm.realm.id
-  role_ids = [keycloak_role.viewer]
+  role_ids = [keycloak_role.viewer.id]
   user_id  = keycloak_user.viewer_user.id
 }

@@ -27,5 +27,6 @@ resource "keycloak_openid_client" "test_client" {
 
   authorization {
     policy_enforcement_mode = "ENFORCING"
+    decision_strategy       = "AFFIRMATIVE"
   }
 }
