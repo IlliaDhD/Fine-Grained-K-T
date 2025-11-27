@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-policy-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-policy-app
+  template:
+    metadata:
+      labels:
+        app: test-policy-app
+    spec:
+      containers:
+        - name: test-policy-app
+          image: test-policy-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          env:
+          - name: KEYCLOAK_HOST
+            value: 'http://keycloak:8080'
+          - name: REALM_NAME
+            value: 'policies-test'
+          - name: CLIENT_ID
+            value: 'test_client'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-policy-app
+spec:
+  selector:
+    app: test-policy-app
+  ports:
+    - port: 80
+      targetPort: 5000
