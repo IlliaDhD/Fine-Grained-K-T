@@ -41,15 +41,6 @@ resource "keycloak_openid_client_role_policy" "viewer_policy" {
   }
 }
 
-resource "keycloak_openid_client_user_policy" "full_admin_policy" {
-  decision_strategy  = "UNANIMOUS"
-  logic              = "POSITIVE"
-  name               = "full_admin_policy"
-  realm_id           = keycloak_realm.realm.id
-  resource_server_id = keycloak_openid_client.test_client.id
-  users              = [keycloak_user.full_admin.id]
-}
-
 # === Scopes ===
 resource "keycloak_openid_client_authorization_scope" "view_scope" {
   name               = "view"
@@ -105,7 +96,6 @@ resource "keycloak_openid_client_authorization_permission" "editor_permission" {
   policies           = [
     keycloak_openid_client_role_policy.editor_policy.id,
     keycloak_openid_client_role_policy.admin_policy.id,
-    keycloak_openid_client_user_policy.full_admin_policy.id
   ]
 }
 
@@ -118,7 +108,6 @@ resource "keycloak_openid_client_authorization_permission" "admin_permission" {
 
   policies           = [
     keycloak_openid_client_role_policy.admin_policy.id,
-    keycloak_openid_client_user_policy.full_admin_policy.id
   ]
 }
 
