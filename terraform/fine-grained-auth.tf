@@ -29,7 +29,7 @@ resource "keycloak_openid_client_role_policy" "editor_policy" {
 
 resource "keycloak_openid_client_role_policy" "viewer_policy" {
   name               = "viewer_policy"
-   realm_id          = keycloak_realm.realm.id
+  realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
   type               = "role"
   decision_strategy  = "UNANIMOUS"
@@ -39,6 +39,15 @@ resource "keycloak_openid_client_role_policy" "viewer_policy" {
     id       = keycloak_role.viewer.id
     required = false
   }
+}
+
+resource "keycloak_openid_client_user_policy" "full_admin_policy" {
+  decision_strategy  = "UNANIMOUS"
+  logic              = "POSITIVE"
+  name               = "full_admin_policy"
+  realm_id           = keycloak_realm.realm.id
+  resource_server_id = keycloak_openid_client.test_client.id
+  users              = [keycloak_user.full_admin.id]
 }
 
 # === Scopes ===
@@ -61,6 +70,8 @@ resource "keycloak_openid_client_authorization_resource" "editor_resource" {
   realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
   uris               = ["/data/*"]
+  type               = "admin-accesseble"
+
   scopes             = [
     keycloak_openid_client_authorization_scope.view_scope.name,
     keycloak_openid_client_authorization_scope.edit_scope.name
@@ -73,17 +84,10 @@ resource "keycloak_openid_client_authorization_resource" "admin_resource" {
   realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
   uris               = ["/admin-pannel"]
-  scopes = [keycloak_openid_client_authorization_scope.view_scope.name]
-}
+  type               = "admin-accesseble"
 
-resource "keycloak_openid_client_authorization_resource" "viewer_resource" {
-  name               = "viewer_resource"
-  display_name       = "Viewer resource"
-  realm_id           = keycloak_realm.realm.id
-  resource_server_id = keycloak_openid_client.test_client.id
-  uris               = ["/data/*"]
-  scopes             = [
-    keycloak_openid_client_authorization_scope.view_scope.name,
+  scopes = [
+    keycloak_openid_client_authorization_scope.view_scope.name
   ]
 }
 
@@ -92,34 +96,47 @@ resource "keycloak_openid_client_authorization_permission" "editor_permission" {
   name               = "editor-permission"
   realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
-  resources          = [keycloak_openid_client_authorization_resource.editor_resource.id]
+  decision_strategy  = "AFFIRMATIVE"
+
+  resources          = [
+    keycloak_openid_client_authorization_resource.editor_resource.id
+  ]
+
   policies           = [
     keycloak_openid_client_role_policy.editor_policy.id,
-    keycloak_openid_client_role_policy.admin_policy.id
+    keycloak_openid_client_role_policy.admin_policy.id,
+    keycloak_openid_client_user_policy.full_admin_policy.id
   ]
-  decision_strategy = "AFFIRMATIVE"
 }
 
 resource "keycloak_openid_client_authorization_permission" "admin_permission" {
   name               = "admin-permission"
   realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
-  resources          = [
-    keycloak_openid_client_authorization_resource.admin_resource.id,
+  decision_strategy  = "AFFIRMATIVE"
+  resource_type      = "admin-accesseble"
+
+  policies           = [
+    keycloak_openid_client_role_policy.admin_policy.id,
+    keycloak_openid_client_user_policy.full_admin_policy.id
   ]
-  policies           = [keycloak_openid_client_role_policy.admin_policy.id]
 }
 
 resource "keycloak_openid_client_authorization_permission" "viewer_permission" {
   name               = "viewer-permission"
   realm_id           = keycloak_realm.realm.id
   resource_server_id = keycloak_openid_client.test_client.id
-  resources          = [keycloak_openid_client_authorization_resource.viewer_resource.id]
-  policies           = [
-    keycloak_openid_client_role_policy.viewer_policy.id,
-    keycloak_openid_client_role_policy.editor_policy.id,
-    keycloak_openid_client_role_policy.admin_policy.id
-  ]
-  decision_strategy = "AFFIRMATIVE"
-}
+  type               = "scope"
 
+  scopes             = [
+    keycloak_openid_client_authorization_scope.view_scope.id
+  ]
+
+  resources          = [
+    keycloak_openid_client_authorization_resource.editor_resource.id
+  ]
+
+  policies           = [
+    keycloak_openid_client_role_policy.viewer_policy.id
+  ]
+}

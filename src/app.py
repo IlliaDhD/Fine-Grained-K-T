@@ -40,8 +40,7 @@ def check_permission(access_token: str, resource: str, scope: str):
     # === Request Headers Initialization ===
     headers = {
         "Authorization":  access_token,
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Host": "127.0.0.1:8081" # Required to match the `iss` token part
+        "Content-Type": "application/x-www-form-urlencoded"
     }
 
     try:
@@ -80,7 +79,7 @@ def read_data():
     if not token:
         return {"error": "Missing token"}, 401
 
-    allowed = check_permission(token, resource="viewer_resource", scope="view")
+    allowed = check_permission(token, resource="editor_resource", scope="view")
 
     if not allowed:
         return {"error": "The user must be a viewer"}, 403

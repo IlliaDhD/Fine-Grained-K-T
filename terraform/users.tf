@@ -51,6 +51,18 @@ resource "keycloak_user" "viewer_user" {
   }
 }
 
+resource "keycloak_user" "full_admin" {
+  realm_id = keycloak_realm.realm.id
+  username = "full_admin"
+  email = "full_admin@notexist.com"
+  first_name = "Full"
+  last_name = "Admin"
+
+  initial_password {
+    value = "2222"
+  }
+}
+
 # === User roles ===
 resource "keycloak_user_roles" "editor_roles" {
   realm_id = keycloak_realm.realm.id
